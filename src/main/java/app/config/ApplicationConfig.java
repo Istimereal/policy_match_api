@@ -24,6 +24,8 @@ import static io.javalin.apibuilder.ApiBuilder.path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 
 public class ApplicationConfig {
     private static Logger logger = LoggerFactory.getLogger(ApplicationConfig.class);
@@ -43,6 +45,7 @@ public class ApplicationConfig {
 
     }
     public static Javalin startServer(int port, EntityManagerFactory emf){
+
         //  PoemDAO poemDAO = PoemDAO.getInstance(emf);
         //  PoemController poemController = new PoemController(poemDAO);
         // public static final . ChatGPT ville gerne have dette med
@@ -57,7 +60,7 @@ public class ApplicationConfig {
         //   restRoutes = new RestRoutes(personController, personEntityController);
 
         //  PoemRoutes poemRoutes = new PoemRoutes(poemController);
-        //  securityRoutes = new SecurityRoutes(securityController);
+          securityRoutes = new SecurityRoutes(securityController);
         //  routes = new Routes(poemRoutes);
         app = Javalin.create(ApplicationConfig::configuration);
         app.beforeMatched(ctx -> securityController.authenticate(ctx)); // check if there is a valid token in the header
@@ -69,6 +72,7 @@ public class ApplicationConfig {
         if (System.getenv("DEPLOYED") == null) {
             beforeFilter(app);
         }
+        app.get("/", ctx -> ctx.json(Map.of("status", "API is running ✅")));
         app.start(port);
 
         return app;

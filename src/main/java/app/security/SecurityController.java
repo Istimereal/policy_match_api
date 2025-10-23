@@ -38,7 +38,7 @@ public class SecurityController {
         return (Context ctx) -> {
             User user = ctx.bodyAsClass(User.class);
             try {
-                User verified = securityDAO.getVerifiedUser(user.getUsername(), user.getPassword());
+                User verified = securityDAO.getVerifiedUser(user.getId(), user.getPassword());
                 ObjectNode on = objectMapper
                         .createObjectNode()
                         .put("msg","Succesfull login for user: "+verified.getUsername());
@@ -117,7 +117,6 @@ public class SecurityController {
         }
         return false;
     }
-
 
     public void authorize(Context ctx) {
         Set<String> allowedRoles = ctx.routeRoles()
