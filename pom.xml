@@ -13,7 +13,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <jackson.version>2.15.0</jackson.version>
+        <jackson.version>2.17.2</jackson.version>
         <lombok.version>1.18.38</lombok.version>
         <hibernate-version>7.1.0.Final</hibernate-version>
         <junit.version>5.13.4</junit.version>
@@ -21,7 +21,7 @@
         <jbcrypt.version>0.4</jbcrypt.version>
         <token.security.version>1.0.4</token.security.version>
         <db.name>policymatch</db.name>
-        <javalin.port>7070</javalin.port>
+        <javalin.port>7075</javalin.port>
     </properties>
 
     <!-- Secutity token library -->
@@ -58,6 +58,12 @@
             <version>${hibernate-version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.14.9</version>
+        </dependency>
+
         <!--  LOMBOK    -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -86,11 +92,7 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.18.3</version>
-        </dependency>
+
         <dependency>
             <groupId>io.javalin</groupId>
             <artifactId>javalin</artifactId>
@@ -225,7 +227,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>3.5.2</version>
                 <configuration>
                     <transformers>
                         <transformer
