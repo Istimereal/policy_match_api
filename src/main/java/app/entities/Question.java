@@ -1,9 +1,7 @@
 package app.entities;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.FilenameFilter;
 import java.util.HashSet;
@@ -12,8 +10,10 @@ import java.util.Set;
 @Setter
 @Getter
 @Entity
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "question")
+@Table(name = "question", uniqueConstraints = @UniqueConstraint(columnNames = {"header", "subject"}))
 public class Question {
 
     @Id
@@ -32,6 +32,5 @@ public class Question {
 
     @OneToMany(mappedBy = "question")
     private Set<UserResponse> userResponses; // = new HashSet<>();
-
 
 }

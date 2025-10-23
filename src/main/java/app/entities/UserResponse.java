@@ -16,6 +16,12 @@ public class UserResponse {
     @EmbeddedId
     private UserResponseId id;
 
+    @Column(name = "respnse", nullable = false)
+    private String response;
+
+    @Column (name = "importance", nullable = false)
+    String importance;
+
     @ManyToOne
     @MapsId("user_Id")
     @JoinColumn(name = "user_Id")
@@ -26,10 +32,6 @@ public class UserResponse {
     @JoinColumn(name = "response_Id")
     private Question question;
 
-    @Column (name = "response")
-private String response;
 
-    @Column (name = "importance")
-String importance;
 
 }
