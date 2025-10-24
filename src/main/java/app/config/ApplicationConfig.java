@@ -18,6 +18,9 @@ public class ApplicationConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationConfig.class);
     private static final ObjectMapper jsonMapper = new ObjectMapper();
+  
+    private static SecurityRoutes securityRoutes;
+    private static Javalin app;
 
     public static Javalin startServer(int port, EntityManagerFactory emf) {
 
@@ -41,13 +44,9 @@ public class ApplicationConfig {
         app.get("/", ctx -> ctx.json(Map.of("status", "API is running ✅")));
         app.get("/auth/healthcheck", ctx -> ctx.result("OK"));
 
-        // Security hooks – whitelist root + healthcheck
-        app.beforeMatched(ctx -> {
-            String p = ctx.path(); // UDEN contextPath
-            if (p.equals("/") || p.equals("/auth/healthcheck")) return;
-            securityController.authenticate(ctx);
-            securityController.authorize(ctx);
-        });
+       // Security filters (kører før matched routes)
+        app.beforeMatched(securityController::authenticate);
+        app.beforeMatched(securityController::authorize);
 
         // CORS + exception handling
         setCORS(app);
@@ -67,7 +66,7 @@ public class ApplicationConfig {
         app.options("/*", ApplicationConfig::setCorsHeaders);
     }
 
-    private static void setCorsHeaders(Context ctx) {
+    private static void setCorsHeaders(io.javalin.http.Context ctx) {
         ctx.header("Access-Control-Allow-Origin", "*");
         ctx.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
         ctx.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -76,6 +75,10 @@ public class ApplicationConfig {
 
     private static void setGeneralExceptionHandling(Javalin app) {
         app.exception(Exception.class, (e, ctx) -> {
+            int statusCode = (e instanceof app.exceptions.ApiException apiEx) ? apiEx.getStatusCode() : 500;
+            String message = (e instanceof app.exceptions.ApiException) ? e.getMessage() : "Internal server error";
+            logger.error("An exception occurred", e);
+            var on = jsonMapper.createObjectNode().put("status", statusCode).put("msg", message);
             int statusCode = (e instanceof ApiException apiEx) ? apiEx.getStatusCode() : 500;
             String message = (e instanceof ApiException) ? e.getMessage() : "Internal server error";
             logger.error("An exception occurred", e);
@@ -86,6 +89,10 @@ public class ApplicationConfig {
     }
 
     private static void beforeFilter(Javalin app) {
-        app.before(ctx -> ctx.req().getHeaderNames().asIterator().forEachRemaining(System.out::println));
+        app.before(ctx -> {
+            // Debug-request headers, valgfrit
+            ctx.req().getHeaderNames().asIterator().forEachRemaining(System.out::println);
+        });
+   
     }
 }
