@@ -40,4 +40,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/policyMatch_api:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/policymatch_api:latest
