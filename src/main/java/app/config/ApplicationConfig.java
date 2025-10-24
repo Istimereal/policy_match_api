@@ -1,5 +1,6 @@
 package app.config;
 
+import app.exceptions.ApiException;
 import app.routes.SecurityRoutes;
 import app.security.SecurityController;
 import app.security.SecurityDAO;
@@ -73,21 +74,21 @@ public class ApplicationConfig {
         ctx.header("Access-Control-Allow-Credentials", "true");
     }
 //ændringer
-    private static void setGeneralExceptionHandling(Javalin app) {
-        app.exception(Exception.class, (e, ctx) -> {
-            int statusCode = (e instanceof app.exceptions.ApiException apiEx) ? apiEx.getStatusCode() : 500;
-            String message = (e instanceof app.exceptions.ApiException) ? e.getMessage() : "Internal server error";
-            logger.error("An exception occurred", e);
-            var on = jsonMapper.createObjectNode().put("status", statusCode).put("msg", message);
-            int statusCode = (e instanceof ApiException apiEx) ? apiEx.getStatusCode() : 500;
-            String message = (e instanceof ApiException) ? e.getMessage() : "Internal server error";
-            logger.error("An exception occurred", e);
-            ObjectNode on = jsonMapper.createObjectNode().put("status", statusCode).put("msg", message);
-            ctx.json(on);
-            ctx.status(statusCode);
-        });
-    }
+  private static void setGeneralExceptionHandling(Javalin app) {
+    app.exception(Exception.class, (e, ctx) -> {
+        int statusCode = (e instanceof ApiException apiEx) ? apiEx.getStatusCode() : 500;
+        String message = (e instanceof ApiException) ? e.getMessage() : "Internal server error";
 
+        logger.error("An exception occurred", e);
+
+        ObjectNode on = jsonMapper.createObjectNode()
+                .put("status", statusCode)
+                .put("msg", message);
+
+        ctx.json(on);
+        ctx.status(statusCode);
+    });
+}
     private static void beforeFilter(Javalin app) {
         app.before(ctx -> {
             // Debug-request headers, valgfrit
