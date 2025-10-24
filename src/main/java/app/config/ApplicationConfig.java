@@ -43,7 +43,6 @@ public class ApplicationConfig {
 
         // Åbne endpoints (ingen auth)
         app.get("/", ctx -> ctx.json(Map.of("status", "API is running ✅")));
-        app.get("/auth/healthcheck", ctx -> ctx.result("OK"));
 
        // Security filters (kører før matched routes)
         app.beforeMatched(securityController::authenticate);
