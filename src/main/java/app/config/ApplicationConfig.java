@@ -68,7 +68,7 @@ public class ApplicationConfig {
         ctx.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
         ctx.header("Access-Control-Allow-Credentials", "true");
     }
-
+//ændring
     private static void setGeneralExceptionHandling(Javalin app) {
         app.exception(Exception.class, (e, ctx) -> {
             int statusCode = (e instanceof app.exceptions.ApiException apiEx) ? apiEx.getStatusCode() : 500;
