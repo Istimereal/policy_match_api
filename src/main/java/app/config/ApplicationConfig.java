@@ -63,6 +63,7 @@ public class ApplicationConfig {
           securityRoutes = new SecurityRoutes(securityController);
         //  routes = new Routes(poemRoutes);
         app = Javalin.create(ApplicationConfig::configuration);
+        app.get("/auth/healthcheck", ctx -> ctx.result("OK"));
         app.beforeMatched(ctx -> securityController.authenticate(ctx)); // check if there is a valid token in the header
         app.beforeMatched(ctx -> securityController.authorize(ctx)); // check if the user has the required role
 // setCORS + setGeneralExceptionHandling skal måske være under app.start(port);
