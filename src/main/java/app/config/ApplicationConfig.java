@@ -73,7 +73,7 @@ public class ApplicationConfig {
             beforeFilter(app);
         }
         app.get("/", ctx -> ctx.json(Map.of("status", "API is running ✅")));
-        app.get("/api/v1/auth/healthcheck", ctx -> ctx.result("OK"));
+        app.get("/auth/healthcheck", ctx -> ctx.result("OK"));
 
         app.start(port);
 
