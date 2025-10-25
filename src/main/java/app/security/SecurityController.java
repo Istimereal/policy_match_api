@@ -43,6 +43,7 @@ public class SecurityController {
                         .createObjectNode()
                         .put("msg","Succesfull login for user: "+verified.getUsername());
                 ctx.json(on).status(200);
+                ctx.attribute("userId", verified.getId());
 
             } catch(ValidationException ex){
                 ObjectNode on = objectMapper.createObjectNode().put("msg","login failed. Wrong username or password");

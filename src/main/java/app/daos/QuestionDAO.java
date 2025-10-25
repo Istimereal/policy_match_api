@@ -2,6 +2,7 @@ package app.daos;
 
 import app.entities.Question;
 import app.exceptions.ApiException;
+import app.exceptions.ApiExceptionCreate;
 import app.exceptions.EntityNotFoundException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -9,6 +10,7 @@ import jakarta.persistence.PersistenceException;
 import jakarta.persistence.TypedQuery;
 import org.hibernate.exception.ConstraintViolationException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class QuestionDAO {
@@ -25,20 +27,23 @@ public QuestionDAO(){}
         return instance;
     }
 
-    public Question createQuestion(Question question){
-       try(EntityManager em = emf.createEntityManager()){
+    public List<Question> createQuestion(List<Question> questions){
+    List<Question> newQuestiones = new ArrayList<>();
+    try(EntityManager em = emf.createEntityManager()){
            em.getTransaction().begin();
-           em.persist(question);
+           for(Question q : questions) {
+               em.persist(q);
+               newQuestiones.add(q);
+           }
            em.getTransaction().commit();
-           return question;
        }
        catch(ConstraintViolationException cve){
-           throw new ApiException(400, cve.getMessage());
+           throw new ApiExceptionCreate(400, "Duplicate or invalid question detected", newQuestiones);
        }
        catch(PersistenceException pex){
-
-           throw new ApiException(500, pex.getMessage());
+        throw new ApiException(500, pex.getMessage());
        }
+    return  newQuestiones;
     }
 
     public List<Question> getAllQuestions(){
@@ -52,7 +57,7 @@ public QuestionDAO(){}
     }
     }
 
-    public Question getQuestionById(int id){
+    public Question findQuestionById(int id){
 
     try (EntityManager em = emf.createEntityManager()){
         Question question = em.find(Question.class, id);
@@ -107,8 +112,6 @@ catch (PersistenceException pex){
         throw new ApiException(500, pex.getMessage());
 }
     }
-
-
 }
 
 

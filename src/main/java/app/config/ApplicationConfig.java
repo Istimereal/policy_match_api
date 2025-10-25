@@ -1,6 +1,13 @@
 package app.config;
 
+import app.controllers.QuestionController;
+import app.controllers.ResponseController;
+import app.daos.QuestionDAO;
+import app.daos.UserResponseDAO;
 import app.exceptions.ApiException;
+import app.routes.QuestionRoutes;
+import app.routes.ResponseRoutes;
+import app.routes.Routes;
 import app.routes.SecurityRoutes;
 import app.security.SecurityController;
 import app.security.SecurityDAO;
@@ -19,13 +26,21 @@ public class ApplicationConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationConfig.class);
     private static final ObjectMapper jsonMapper = new ObjectMapper();
-  
-    private static SecurityRoutes securityRoutes;
-    private static Javalin app;
 
     public static Javalin startServer(int port, EntityManagerFactory emf) {
 
         // Init security + routes
+
+        QuestionDAO questionDAO = QuestionDAO.getInstance(emf);
+        UserResponseDAO userResponseDAO = UserResponseDAO.getInstance(emf);
+
+        QuestionController questionController = new QuestionController(questionDAO);
+        ResponseController responseController = new ResponseController(userResponseDAO);
+
+        QuestionRoutes questionRoutes = new QuestionRoutes(questionController);
+        ResponseRoutes responseRoutes = new ResponseRoutes(responseController);
+        Routes routes = new Routes(questionRoutes, responseRoutes);
+
         SecurityDAO securityDAO = new SecurityDAO(emf);
         SecurityController securityController = new SecurityController(securityDAO);
         SecurityRoutes securityRoutes = new SecurityRoutes(securityController);
@@ -35,7 +50,7 @@ public class ApplicationConfig {
             config.showJavalinBanner = false;
             config.bundledPlugins.enableRouteOverview("/routes");
             config.router.contextPath = "/api/v1";
-
+            config.router.apiBuilder(routes.getEndpoints());
             // Registrér EndpointGroups direkte i routeren
             config.router.apiBuilder(securityRoutes.getSecurityRoutes());
             config.router.apiBuilder(SecurityRoutes.getSecuredRoutes());
@@ -93,6 +108,5 @@ public class ApplicationConfig {
             // Debug-request headers, valgfrit
             ctx.req().getHeaderNames().asIterator().forEachRemaining(System.out::println);
         });
-   
     }
 }
