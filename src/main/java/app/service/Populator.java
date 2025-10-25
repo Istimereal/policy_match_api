@@ -67,7 +67,7 @@ public class Populator {
 
             em.getTransaction().commit();
 
-            System.out.println("✅ Users and roles created successfully!");
+            System.out.println("Users and roles created successfully!");
         }
     }
 }
