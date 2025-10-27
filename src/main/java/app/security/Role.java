@@ -21,11 +21,11 @@ public class Role {
     public Role(String roleName) {
         this.roleName = roleName;
     }
-
+    //@JoinColumn(name = "username")
     @ManyToMany
     @JoinTable(name = "role_user",
-            joinColumns = @JoinColumn(name = "rolename"),
-            inverseJoinColumns = @JoinColumn(name = "username"))
+            joinColumns = @JoinColumn(name = "rolename", referencedColumnName = "rolename"),
+            inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"))
     private Set<User> users = new HashSet<>();
 
     public void addUser(User user) {

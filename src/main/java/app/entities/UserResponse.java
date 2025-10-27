@@ -1,14 +1,16 @@
 package app.entities;
 
+import app.enums.Importance;
+import app.enums.Response;
 import app.security.User;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Setter
 @Getter
 @Entity
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "user_response")
 public class UserResponse {
@@ -16,22 +18,22 @@ public class UserResponse {
     @EmbeddedId
     private UserResponseId id;
 
-    @Column(name = "respnse", nullable = false)
-    private String response;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "response", nullable = false)
+    private Response response;
 
-    @Column (name = "importance", nullable = false)
-    String importance;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "importance", nullable = false)
+    private Importance importance;
 
     @ManyToOne
-    @MapsId("user_Id")
-    @JoinColumn(name = "user_Id")
+    @MapsId("userId")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
-    @MapsId("response_Id")
-    @JoinColumn(name = "response_Id")
+    @MapsId("questionId")
+    @JoinColumn(name = "question_id")
     private Question question;
-
-
 
 }

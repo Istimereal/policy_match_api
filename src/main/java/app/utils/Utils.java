@@ -19,8 +19,25 @@ public class Utils {
         System.out.println(getPropertyValue("db.name", "properties-from-pom.properties"));
     }
 
+
+
     public static String getPropertyValue(String propName, String resourceName)  {
-        try (InputStream is = Utils.class.getClassLoader().getResourceAsStream(resourceName)) {
+
+        try (InputStream is = Utils.class.getClassLoader().getResourceAsStream("config.properties")) {
+            Properties prop = new Properties();
+            prop.load(is);
+
+            String value = prop.getProperty(propName);
+            if (value != null) {
+                return value.trim(); // Fjerner evt. whitespace
+            } else {
+                throw new ApiException(500, String.format("Security property %s not found in config.properties", propName));
+            }
+        } catch (IOException ex) {
+            throw new ApiException(500, String.format("Could not read security property %s from config.properties.", propName));
+        }
+
+      /*  try (InputStream is = Utils.class.getClassLoader().getResourceAsStream(resourceName)) {
             Properties prop = new Properties();
             prop.load(is);
 
@@ -32,7 +49,7 @@ public class Utils {
             }
         } catch (IOException ex) {
             throw new ApiException(500, String.format("Could not read property %s.", propName));
-        }
+        }  */
     }
 
     public static String getPropertyValueSecurity(String propName, String ressourceName)  {

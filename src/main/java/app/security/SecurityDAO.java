@@ -20,9 +20,31 @@ public class SecurityDAO implements ISecurityDAO{
     }
 
     @Override
-    public User getVerifiedUser(int id, String password) throws ValidationException {
+    public User getVerifiedUser(String username, String password) throws ValidationException {
+        try (EntityManager em = emf.createEntityManager()) {
+
+            // Find brugeren ud fra username (ikke id)
+            TypedQuery<User> query = em.createQuery(
+                    "SELECT u FROM User u WHERE u.username = :username", User.class);
+            query.setParameter("username", username);
+
+            // Hent første resultat, hvis der findes nogen
+            User foundUser = query.getResultStream().findFirst().orElse(null);
+
+            // Hvis brugeren findes og password matcher (hashed)
+            if (foundUser != null && foundUser.verifyPassword(password)) {
+                return foundUser;
+            }
+            // Hvis brugeren ikke findes eller password er forkert → kast exception
+            throw new ValidationException("Wrong username or password");
+        }
+    }
+
+    /*
+    @Override
+    public User getVerifiedUser(String Username, String password) throws ValidationException {
         try(EntityManager em = emf.createEntityManager()){
-            User foundUser = em.find(User.class, id);
+            User foundUser = em.find(User.class, username);
 
             if(foundUser != null && foundUser.verifyPassword(password)) //foundUser.verifyPassword(password) == true
             {
@@ -31,15 +53,17 @@ public class SecurityDAO implements ISecurityDAO{
         }
         return null;
     }
-
+*/
     @Override
     public User createUser(User user) {
         try(EntityManager em = emf.createEntityManager()){
 
             TypedQuery<User> query = em.createQuery(
-                    "SELECT u FROM User u WHERE u.username = :username", User.class
+                    "SELECT u FROM User u WHERE u.username = :username AND u.email = :email", User.class
             );
             query.setParameter("username", user.getUsername());
+            // mig
+            query.setParameter("email", user.getEmail());
             List<User> result = query.getResultList();
       if(!result.isEmpty()){
           throw new EntityExistsException("Username: " + user.getUsername() + " Is taken please select an other username");
