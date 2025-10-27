@@ -1,15 +1,17 @@
 package app.service;
 
 import app.dtos.UserResponseDTO;
+import app.entities.Question;
 import app.entities.UserResponse;
 import app.entities.UserResponseId;
+import app.security.User;
 
 import java.beans.PropertyEditorSupport;
 import java.util.List;
 
 public class ConverterUserResponse {
 
-    public static UserResponse convertDTOToUserAndID(UserResponseDTO userResponseDTO, int userId) {
+    public static UserResponse convertDTOToUserAndID(UserResponseDTO userResponseDTO, int userId, User user, Question question) {
 
        UserResponseId id = UserResponseId.builder()
                .userId(userId)
@@ -18,6 +20,8 @@ public class ConverterUserResponse {
 
         return new UserResponse().builder()
                 .id(id)
+                .user(user)
+                .question(question)
                 .response(userResponseDTO.getResponse())
                 .importance(userResponseDTO.getImportance())
                 .build();
@@ -39,10 +43,10 @@ public static List<UserResponseDTO> convertToUserResponseDTOList(List<UserRespon
                 .toList();
 }
 
-public static List<UserResponse> convertToUserResponseList(List<UserResponseDTO> userResponses, int userId) {
+public static List<UserResponse> convertToUserResponseList(List<UserResponseDTO> userResponses, int userId, User user, Question question) {
 
         return userResponses.stream()
-                .map(dto -> convertDTOToUserAndID(dto, userId))
+                .map(dto -> convertDTOToUserAndID(dto, userId, user, question))
                 .toList();
 }
 }

@@ -1,9 +1,10 @@
 package app.routes;
 
 import app.controllers.QuestionController;
+import app.enums.Role;
 import io.javalin.apibuilder.EndpointGroup;
 
-import static io.javalin.apibuilder.ApiBuilder.post;
+import static io.javalin.apibuilder.ApiBuilder.*;
 
 public class QuestionRoutes {
 
@@ -16,10 +17,10 @@ public class QuestionRoutes {
     public EndpointGroup getRoutes(){
 
         return () -> {
-            post("/", ctx -> questionController.createQuestions(ctx));
-
+            post( ctx -> questionController.createQuestions(ctx), Role.ADMIN);
+            patch(ctx -> questionController.updateQuestion(ctx), Role.ADMIN);
+            get(ctx -> questionController.getAllQuestions(ctx), Role.ANYONE);
+            delete(ctx -> questionController.deleteQuestion(ctx), Role.ADMIN);
         };
     }
-
-
 }

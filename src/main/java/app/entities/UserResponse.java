@@ -27,15 +27,13 @@ public class UserResponse {
     private Importance importance;
 
     @ManyToOne
-    @MapsId("user_Id")
-    @JoinColumn(name = "user_Id")
+    @MapsId("userId")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
-    @MapsId("response_Id")
-    @JoinColumn(name = "response_Id")
+    @MapsId("questionId")
+    @JoinColumn(name = "question_id")
     private Question question;
-
-
 
 }

@@ -11,6 +11,7 @@ public class Routes {
 
 private final QuestionRoutes questionRoutes;
 private final ResponseRoutes responseRoutes;
+SecurityRoutes securityRoutes;
 
 public Routes(QuestionRoutes questionRoutes, ResponseRoutes responseRoutes) {
     this.questionRoutes = questionRoutes;
@@ -23,12 +24,6 @@ public EndpointGroup getEndpoints() {
         path("/responses", responseRoutes.getRoutes());
     };
 }
-
- //   private final PoemRoutes poemRoutes;
-
- /*   public Routes(PoemRoutes poemRoutes) {
-        this.poemRoutes = poemRoutes;
-    } */
 
   /*  public EndpointGroup getRoutes(){
 

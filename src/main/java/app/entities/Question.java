@@ -17,7 +17,7 @@ import java.util.Set;
 public class Question {
 
     @Id
-    @Column(name = "questionId")
+    @Column(name = "question_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
@@ -30,7 +30,7 @@ public class Question {
     @Column(name = "subject", nullable = false)
     private String subject;
 
-    @OneToMany(mappedBy = "question")
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserResponse> userResponses; // = new HashSet<>();
 
 }
