@@ -2,9 +2,7 @@ package app.security;
 
 import app.entities.UserResponse;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.mindrot.jbcrypt.BCrypt;
 
 import app.security.Role;
@@ -16,6 +14,8 @@ import java.util.Set;
 @Setter
 @Getter
 @Entity
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name="users")
 public class User implements ISecurityUser{
@@ -36,16 +36,24 @@ public class User implements ISecurityUser{
     @Column(name = "city", nullable = false)
     private String city;
 
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
     private Set<Role> roles = new HashSet<>();
 
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserResponse> userResponsesSet; // = new HashSet<>();
 
     public User(String username, String password){
         this.username = username;
         String hashed = BCrypt.hashpw(password, BCrypt.gensalt());
         this.password = hashed;
+    }
+
+    public User(String username, String password, String email, String city) {
+        this.username = username;
+        String hashed = BCrypt.hashpw(password, BCrypt.gensalt());
+        this.password = hashed;
+        this.email = email;
+        this.city = city;
     }
 
     @Override
@@ -62,6 +70,5 @@ public class User implements ISecurityUser{
     @Override
     public void removeRole(Role role) {
         this.roles.remove(role);
-
     }
 }

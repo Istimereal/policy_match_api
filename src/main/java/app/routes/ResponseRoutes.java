@@ -1,6 +1,7 @@
 package app.routes;
 
 import app.controllers.ResponseController;
+import app.enums.Role;
 import io.javalin.apibuilder.EndpointGroup;
 
 import static io.javalin.apibuilder.ApiBuilder.*;
@@ -16,9 +17,8 @@ public class ResponseRoutes {
     public EndpointGroup getRoutes() {
 
             return () -> {
-
-                post(ctx -> responseController.userResponse(ctx));
-                get(ctx -> responseController.getPolicyMatch(ctx));
+                post(ctx -> responseController.userResponse(ctx), Role.USER,  Role.ADMIN);
+                get(ctx -> responseController.getPolicyMatch(ctx), Role.USER,  Role.ADMIN);
             };
 
      /*   return () -> {

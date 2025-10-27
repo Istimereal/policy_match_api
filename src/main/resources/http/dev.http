@@ -1,0 +1,91 @@
+@url = http://localhost:7075/api/v1
+http://localhost:7075/api/v1
+
+### A simple get request to the test endpoint. No need for login
+GET {{url}}/auth/register/
+
+####   <!--create new user-->
+POST {{url}}/auth/register/
+Content-Type: application/json
+
+{
+"username": "user",
+"password": "test123",
+"email": "ab@124.dk",
+"city": "Lyngby"
+}
+
+###
+POST {{url}}/auth/login/
+content-type: application/json
+
+{
+"username": "user",
+"password": "test123"
+}
+
+###
+POST{{url}}/questions/
+Authorization: Bearer {{admin_token}}
+{
+  "header": "Climate change responsibility",
+  "questionText": "Do you think Denmark should take stronger action against climate change, even if it costs jobs in certain industries?",
+  "subject": "environment"
+}
+
+###
+POST {{url}}/response
+Authorization: Bearer {{user_token}}
+[{
+“id” : 2,
+“response”: “agree”,
+“importance”: “high”
+},
+{
+“id” : 3,
+“response” : “disagree”,
+“importance” : “low”
+},
+{
+“id” : 3,
+“response” : “neutral”,
+“importance” : “medium”
+}
+]
+
+###
+POST {{url}}/response
+Authorization: Bearer {{user_token}}
+[{
+  "userId": 2,
+  "questionId": 1,
+  "response": "AGREE",
+  "importance": "HIGH"
+}]
+
+###
+GET {{url}}/response
+Authorization: Bearer {{user_token}}
+
+###
+DELETE {{url}}/questions/1
+Authorization: Bearer {{admin_token}}
+
+###
+PATCH {{url}}/questions
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "questionText": "Should Denmark prioritize nuclear energy as part of its green transition?"
+}
+
+
+
+
+
+
+
+
+
+

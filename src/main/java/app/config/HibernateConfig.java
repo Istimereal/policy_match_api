@@ -1,6 +1,9 @@
 package app.config;
 
 //import app.entities.;
+import app.entities.Question;
+import app.entities.UserResponse;
+import app.entities.UserResponseId;
 import app.security.Role;
 import app.security.User;
 import app.utils.Utils;
@@ -48,7 +51,9 @@ public class HibernateConfig {
     private static void getAnnotationConfiguration(Configuration configuration) {
         configuration.addAnnotatedClass(User.class);
         configuration.addAnnotatedClass(Role.class);
-        // configuration.addAnnotatedClass(Poem.class);
+        configuration.addAnnotatedClass(UserResponse.class);
+        configuration.addAnnotatedClass(Question.class);
+        configuration.addAnnotatedClass(UserResponseId.class);
 
     }
 
@@ -86,7 +91,7 @@ public class HibernateConfig {
     }
     private static Properties setBaseProperties(Properties props) {
         props.put("hibernate.connection.driver_class", "org.postgresql.Driver");
-        props.put("hibernate.hbm2ddl.auto", "update");  // set to "update" when in production
+        props.put("hibernate.hbm2ddl.auto", "create");  // set to "update" when in production
         props.put("hibernate.current_session_context_class", "thread");
         props.put("hibernate.show_sql", "false");
         props.put("hibernate.format_sql", "false");
@@ -103,10 +108,10 @@ public class HibernateConfig {
     }
 
     private static Properties setDevProperties(Properties props) {
-        props.put("hibernate.connection.url", "jdbc:postgresql://localhost:5432/poem");
-        props.put("hibernate.connection.username", "dev");
-        props.put("hibernate.connection.password", "ax2");
-        props.put("hibernate.hbm2ddl.auto", "update"); // To keep tables
+        props.put("hibernate.connection.url", "jdbc:postgresql://localhost:5432/policymatch");
+        props.put("hibernate.connection.username", "dev2");
+        props.put("hibernate.connection.password", "ax22");
+        props.put("hibernate.hbm2ddl.auto", "create"); // To keep tables
         props.put("hibernate.show_sql", "true");
         props.put("hibernate.format_sql", "true");
         return props;
@@ -121,7 +126,7 @@ public class HibernateConfig {
         props.put("hibernate.connection.password", "postgres");
         props.put("hibernate.archive.autodetection", "class");
         props.put("hibernate.show_sql", "true");
-        props.put("hibernate.hbm2ddl.auto", "create-drop"); // update for production
+        props.put("hibernate.hbm2ddl.auto", "create"); // update for production
         return props;
     }
 }
