@@ -24,7 +24,6 @@
         <javalin.port>7075</javalin.port>
     </properties>
 
-    <!-- Secutity token library -->
     <repositories>
         <repository>
             <id>jitpack.io</id>
@@ -33,8 +32,7 @@
     </repositories>
 
     <dependencies>
-
-        <!-- chatGPT dep  -->
+        <!-- OpenAI client -->
         <dependency>
             <groupId>com.openai</groupId>
             <artifactId>openai-java</artifactId>
@@ -53,7 +51,7 @@
             <version>${jackson.version}</version>
         </dependency>
 
-        <!--  DB    -->
+        <!-- DB / JPA -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -64,28 +62,53 @@
             <artifactId>hibernate-core</artifactId>
             <version>${hibernate-version}</version>
         </dependency>
-
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
             <version>1.14.9</version>
         </dependency>
 
-        <!--  LOMBOK    -->
+        <!-- Web server -->
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
+            <groupId>io.javalin</groupId>
+            <artifactId>javalin</artifactId>
+            <version>6.5.0</version>
         </dependency>
 
-        <!--  TESTING      -->
+        <!-- Logging -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.4.11</version>
+        </dependency>
+
+        <!-- Security / auth -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>${jbcrypt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.Hartmannsolution</groupId>
+            <artifactId>TokenSecurity</artifactId>
+            <version>${token.security.version}</version>
+        </dependency>
+
+        <!-- HTTP client (your OpenAI prompt code may use this) -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.12.0</version>
+        </dependency>
+
+        <!-- TEST -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -101,61 +124,23 @@
         </dependency>
 
         <dependency>
-            <groupId>io.javalin</groupId>
-            <artifactId>javalin</artifactId>
-            <version>6.5.0</version>
-        </dependency>
-        <!--  oprindelige log type i programmet
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>2.0.16</version>
-        </dependency>     -->
-
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.4.11</version>
-        </dependency>
-
-
-        <!-- REST Assured for API testing -->
-        <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>5.5.0</version>
             <scope>test</scope>
         </dependency>
 
-        <!-- Hamcrest for matchers -->
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest</artifactId>
-            <version>2.2</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- JUnit 5 API for writing test cases -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.13.4</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- JUnit 5 Engine for running tests -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.13.4</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Optional: REST Assured JSON Path for handling JSON responses -->
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>json-path</artifactId>
             <version>5.5.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>2.2</version>
             <scope>test</scope>
         </dependency>
 
@@ -169,47 +154,23 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
-            <version>1.20.1</version> <!-- eller nyere -->
+            <version>1.20.1</version>
             <scope>test</scope>
         </dependency>
-
-        <!--  Security dependencies  -->
         <dependency>
-            <groupId>org.mindrot</groupId>
-            <artifactId>jbcrypt</artifactId>
-            <version>${jbcrypt.version}</version>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.38</version>
+            <scope>provided</scope>
         </dependency>
-        <!-- JWT utility classes -->
-        <dependency>
-            <groupId>com.github.Hartmannsolution</groupId>
-            <artifactId>TokenSecurity</artifactId>
-            <version>${token.security.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mindrot</groupId>
-            <artifactId>jbcrypt</artifactId>
-            <version>${jbcrypt.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.Hartmannsolution</groupId>
-            <artifactId>TokenSecurity</artifactId>
-            <version>${token.security.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>4.12.0</version>
-        </dependency>
-
     </dependencies>
 
     <build>
-        <finalName>app</finalName> <!-- This is the name of the jar file -->
+        <finalName>app</finalName>
+
         <plugins>
+            <!-- write-project-properties: used by Utils.getPropertyValue("db.name", ...) -->
             <plugin>
-                <!--  https://www.baeldung.com/java-accessing-maven-properties  -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>properties-maven-plugin</artifactId>
                 <version>1.0.0</version>
@@ -225,25 +186,27 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- JUnit runner -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0</version>
             </plugin>
 
+            <!-- Shade fat-jar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.5.2</version>
                 <configuration>
                     <transformers>
-                        <transformer
-                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>app.Main</mainClass> <!-- Here you should put the main class of your application -->
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <mainClass>app.Main</mainClass>
                         </transformer>
                     </transformers>
                     <filters>
-                        <filter> <!-- This filter is needed to avoid a bug in the shade plugin -->
+                        <filter>
                             <artifact>*:*</artifact>
                             <excludes>
                                 <exclude>module-info.class</exclude>
@@ -253,12 +216,6 @@
                             </excludes>
                         </filter>
                     </filters>
-                    <relocations>
-                        <relocation>
-                            <pattern>com.example</pattern>
-                            <shadedPattern>my.project.com.example</shadedPattern>
-                        </relocation>
-                    </relocations>
                 </configuration>
                 <executions>
                     <execution>
@@ -272,5 +229,4 @@
 
         </plugins>
     </build>
-
 </project>
