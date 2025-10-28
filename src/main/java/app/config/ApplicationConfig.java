@@ -4,23 +4,21 @@ import app.controllers.QuestionController;
 import app.controllers.ResponseController;
 import app.daos.QuestionDAO;
 import app.daos.UserResponseDAO;
-import app.enums.Role;
 import app.exceptions.ApiException;
-import app.routes.*;
+import app.routes.QuestionRoutes;
+import app.routes.ResponseRoutes;
+import app.routes.Routes;
+import app.routes.SecurityRoutes;
 import app.security.SecurityController;
 import app.security.SecurityDAO;
-import app.exceptions.ApiException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.javalin.Javalin;
-import io.javalin.http.Context;
 import jakarta.persistence.EntityManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-
-import static io.javalin.apibuilder.ApiBuilder.*;
 
 public class ApplicationConfig {
 
