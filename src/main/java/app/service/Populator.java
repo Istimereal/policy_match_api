@@ -50,6 +50,26 @@ public class Populator {
 
     private final EntityManagerFactory emf;
     public Populator(EntityManagerFactory emf){ this.emf = emf; }
+/*
+    public void createRoles() {
+       try(EntityManager em = emf.createEntityManager()) {
+           Role roleUser = new Role();
+           roleUser.setRoleName("User");
+           Role roleAdmin = new Role();
+           roleAdmin.setRoleName("Admin");
+
+           em.getTransaction().begin();
+           em.persist(roleUser);
+           em.persist(roleAdmin);
+           em.getTransaction().commit();
+
+           System.out.println("Role created successfully");
+       }
+       catch(Exception e){
+
+           System.out.println("Could not create Roles" + e.getMessage());
+       }
+    }  */
 
     public void createUsersAndRoles() {
         try (EntityManager em = emf.createEntityManager()) {

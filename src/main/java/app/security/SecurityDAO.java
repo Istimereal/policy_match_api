@@ -106,16 +106,25 @@ public class SecurityDAO implements ISecurityDAO{
     public User addUserRole(int id, String rolename) {
 
         try (EntityManager em = emf.createEntityManager()) {
+            System.out.println("Adding role: " + rolename);
             User foundUser = em.find(User.class, id);
 
+            System.out.println("Adding role 2: " + rolename);
             Role foundRole = em.find(Role.class, rolename);
+            System.out.println("Adding role 3: " + rolename);
+            System.out.println("Adding role 4: Found user: " + foundUser.getUsername());
+            System.out.println("Adding role 5: Found role: " + foundRole.getRoleName());
             if (foundUser == null || foundRole == null) {
+                System.out.println("Adding role: not possible" + rolename);
                 throw new IllegalArgumentException("User and role not found");
             }
             foundUser.addRole(foundRole);
+            foundRole.getUsers().add(foundUser);
+            System.out.println("Adding role: Ready to merge " + rolename);
             em.getTransaction().begin();
-            em.merge(foundUser);
+            em.merge(foundRole);
             em.getTransaction().commit();
+            System.out.println("Adding role: merged" + rolename);
             return foundUser;
         }
     }
