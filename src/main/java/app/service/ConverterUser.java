@@ -4,6 +4,9 @@ import app.dtos.AppUserDTO;
 import app.security.User;
 import dk.bugelhartmann.UserDTO;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public class ConverterUser {
 
     public static User convertUserDTO(AppUserDTO appDTO) {
@@ -18,10 +21,20 @@ return user;
                 .build();  */
     }
 
-    public static UserDTO convertUserToUserDTO(User user) {
 
+    public static dk.bugelhartmann.UserDTO convertUserToUserDTO(app.security.User user) {
+        Set<String> roleNames = user.getRoles().stream()
+                .map(app.security.Role::getRoleName)   // fx "user"
+                .map(String::toUpperCase)              // "USER"
+                .collect(Collectors.toSet());
+
+        return new dk.bugelhartmann.UserDTO(user.getUsername(), roleNames);
+
+    }
+
+     /*public static UserDTO convertUserToUserDTO(User user) {
         UserDTO userDTO = new UserDTO(user.getUsername(), user.getPassword());
 
         return userDTO;
-    }
+    }*/
 }

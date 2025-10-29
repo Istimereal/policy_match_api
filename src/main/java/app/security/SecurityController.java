@@ -1,21 +1,17 @@
 package app.security;
 
 import app.dtos.AppUserDTO;
+import app.exceptions.NotAuthorizedException;
+import app.exceptions.ValidationException;
 import app.service.ConverterUser;
 import app.utils.Utils;
+import ch.qos.logback.core.subst.Token;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.nimbusds.jose.JOSEException;
 import dk.bugelhartmann.TokenSecurity;
 import dk.bugelhartmann.TokenVerificationException;
 import dk.bugelhartmann.UserDTO;
-import app.exceptions.ValidationException;
-import app.exceptions.ApiException;
-import app.exceptions.NotAuthorizedException;
 import io.javalin.http.*;
-
-//import dk.bugelhartmann.UserDTO;
 import jakarta.persistence.EntityExistsException;
 
 import java.text.ParseException;
@@ -37,17 +33,30 @@ public class SecurityController {
         return (Context ctx) -> {
 
             try {
+                System.out.println("login 1");
                 User user = ctx.bodyAsClass(User.class);
+                System.out.println("login 1.1");
                 User verifiedUser = securityDAO.getVerifiedUser(user.getUsername(), user.getPassword());
+                System.out.println("login 1.2");
                 UserDTO verifiedUserDTO = ConverterUser.convertUserToUserDTO(verifiedUser);
+
+                System.out.println("login 1.3 verifiedUserDTO username: " + verifiedUserDTO.getUsername());
+                System.out.println("login 1.3 verifiedUserDTO passsword: " + verifiedUserDTO.getPassword());
+                System.out.println("login 1.3 verifiedUserDTO roles: " + verifiedUserDTO.getRoles());
+
+
+                System.out.println("login 1.3");
                 String token = createToken(verifiedUserDTO);
+                System.out.println("login 1.4");
              /*   ObjectNode on = objectMapper
                         .createObjectNode()
                         .put("msg","Succesfull login for user: "+verified.getUsername());  */
+                System.out.println("login 1.5");
                 ctx.status(HttpStatus.OK).json(Map.of("username", verifiedUserDTO.getUsername(), "token", token));
-
+                System.out.println("login 1.6");
             } catch(ValidationException ex){
                 //     ObjectNode on = objectMapper.createObjectNode().put("msg","login failed. Wrong username or password");
+                System.out.println("login validation exception 1");
                 ctx.status(HttpStatus.UNAUTHORIZED).json(Map.of("status", HttpStatus.UNAUTHORIZED.getCode(), "msg", "login failed. Wrong username or password"));
                 //     ctx.json(on).status(401);
             }
@@ -80,12 +89,28 @@ public class SecurityController {
             ObjectNode returnObject = objectMapper.createObjectNode();
             try {
                 AppUserDTO userInput = ctx.bodyAsClass(AppUserDTO.class);
+                String password = userInput.getPassword();
+                String username = userInput.getUsername();
 
                 User newUser = ConverterUser.convertUserDTO(userInput);
 
                 User created = securityDAO.createUser(newUser);
 
-                String token = createToken(new UserDTO(created.getUsername(), Set.of("USER")));
+                securityDAO.addUserRole(created.getId(), "user");
+
+                User verifiedDTO = securityDAO.getVerifiedUser(username, password);
+
+                System.out.println("Created Username: verified " +verifiedDTO.getUsername());
+                System.out.println("Created Password: verified " +verifiedDTO.getPassword());
+                System.out.println("Created Roles: verified " +verifiedDTO.getRoles());
+
+             UserDTO createdDTO = ConverterUser.convertUserToUserDTO(verifiedDTO);
+
+                System.out.println("2created UserDTO" + createdDTO);
+                String token = createToken(createdDTO);
+             //   String token = createToken(new UserDTO(username, Set.of("USER")));
+
+                System.out.println("Token: " + token);
                 ctx.status(HttpStatus.CREATED).json(returnObject
                         .put("token", token)
                         .put("username", created.getUsername()));
@@ -146,7 +171,6 @@ public class SecurityController {
         return token;
     }
 
-
     private boolean isOpenEndpoint(Set<String> allowedRoles) {
         // If the endpoint is not protected with any roles:
         if (allowedRoles.isEmpty())
@@ -190,20 +214,31 @@ public class SecurityController {
             String TOKEN_EXPIRE_TIME;
             String SECRET_KEY;
 
+            System.out.println("Creating Token 1");
+
             if (System.getenv("DEPLOYED") != null) {
                 ISSUER = System.getenv("ISSUER");
                 TOKEN_EXPIRE_TIME = System.getenv("TOKEN_EXPIRE_TIME");
                 SECRET_KEY = System.getenv("SECRET_KEY");
+
+                System.out.println("Creating Token 1: deployed");
             } else {
+
+                System.out.println("createToken developer: 1 a.");
                 ISSUER = "Thomas Hartmann";
                 TOKEN_EXPIRE_TIME = "1800000";
                 SECRET_KEY = Utils.getPropertyValue("SECRET_KEY", "config.properties");
+                System.out.println("createToken developer: 1 B.");
             }
+            System.out.println("Creating Token 2");
+            String token = tokenSecurity.createToken(user, ISSUER, TOKEN_EXPIRE_TIME, SECRET_KEY);
 
-            return tokenSecurity.createToken(user, ISSUER, TOKEN_EXPIRE_TIME, SECRET_KEY);
+            System.out.println("Created token: " + token);
+            return token;
 
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("Creating Token 1 c error");
             throw new Exception("Could not create token", e);  // ✅ korrekt syntaks
         }
     }
@@ -242,19 +277,23 @@ return security;
         String SECRET = IS_DEPLOYED
                 ? System.getenv("SECRET_KEY")
                 : Utils.getPropertyValue("SECRET_KEY", "config.properties");
-
+        System.out.println("Login Verifying Token 1");
         try {
             if (tokenSecurity.tokenIsValid(token, SECRET) && tokenSecurity.tokenNotExpired(token)) {
+                System.out.println("Login Verified Token 2");
                 return tokenSecurity.getUserWithRolesFromToken(token);
             } else {
+                System.out.println("login verifyToken : Not authorized ");
                 throw new NotAuthorizedException(403, "Token is not valid");
             }
 
         } catch (ParseException | NotAuthorizedException e) {
             e.printStackTrace();
+            System.out.println("login verifyToken : PerseException ");
             throw new Exception("Unauthorized. Could not verify token", e);
 
         } catch (TokenVerificationException tve) {
+            System.out.println("login verifyToken : TokenVerificationException last ");
             throw new Exception("Unauthorized. Could not verify token", tve);
         }
     }
