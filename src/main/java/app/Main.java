@@ -19,6 +19,7 @@ public class Main {
 
         pop.createQuestions();
         pop.createAnswers();
+       // pop.createRoles();
 
         ApplicationConfig.startServer(7075, emf);
     }
