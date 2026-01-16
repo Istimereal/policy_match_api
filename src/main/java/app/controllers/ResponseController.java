@@ -1,5 +1,6 @@
 package app.controllers;
 
+import app.daos.QuestionDAO;
 import app.daos.UserResponseDAO;
 
 import app.dtos.ChatGPTPolicyMatch;
@@ -16,12 +17,14 @@ import com.openai.client.okhttp.OpenAIOkHttpClient;
 import com.openai.errors.OpenAIException;
 import com.openai.models.responses.Response;
 import com.openai.models.responses.ResponseCreateParams;
+import dk.bugelhartmann.UserDTO;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceException;
+import jakarta.persistence.TypedQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,10 +52,12 @@ public class ResponseController {
     private static final Logger debugLogger = LoggerFactory.getLogger("debug");
 
     private final UserResponseDAO userResponseDAO;
+    private final QuestionDAO questionDAO;
     private final EntityManagerFactory emf;
 
-    public ResponseController(UserResponseDAO userResponseDAO, EntityManagerFactory _emf) {
+    public ResponseController(QuestionDAO questionDAO, UserResponseDAO userResponseDAO, EntityManagerFactory _emf) {
         this.userResponseDAO = userResponseDAO;
+        this.questionDAO = questionDAO;
         this.emf = _emf;
     }
 
@@ -61,9 +66,18 @@ public class ResponseController {
         List<UserResponse> userResponsesWithUandQ = new ArrayList<>();
 
         try (EntityManager em = emf.createEntityManager()){
-            int userId = ctx.attribute("userId");
 
-            User user = em.find(User.class, userId);
+            UserDTO tokenUser = ctx.attribute("user");
+            String username = tokenUser.getUsername();
+
+
+            TypedQuery<User> query = em.createQuery(
+                    "SELECT u FROM User u WHERE u.username = :username", User.class);
+            query.setParameter("username", username);
+
+            User user = query.getSingleResult();
+            int userId = user.getId();
+
             List<UserResponseDTO> allResponses = Arrays.asList(ctx.bodyAsClass(UserResponseDTO[].class));
 
             for (UserResponseDTO dto : allResponses) {
@@ -86,7 +100,7 @@ public class ResponseController {
             userResponseDAO.createResponse(userResponsesWithUandQ);
 
             ctx.status(HttpStatus.OK).json(Map.of("status", HttpStatus.OK, "msg",
-                    "Your responses have been saved, go to GET /api/v1/responses to see your policy match"));
+                    "Your responses have been saved, go to Policy Match Evaluation to see your evaluation"));
         } catch (BadRequestResponse br) {
             ctx.status(HttpStatus.BAD_REQUEST).
                     json(Map.of("status", HttpStatus.BAD_REQUEST.getCode(),
@@ -103,16 +117,31 @@ public class ResponseController {
     }
 
     public void getPolicyMatch(Context ctx) {
-        try {
-            int id = Integer.parseInt(ctx.attribute("userId").toString());
+        try (EntityManager em = emf.createEntityManager()){
+            UserDTO tokenUser = ctx.attribute("user");
+            String username = tokenUser.getUsername();
 
-            List<UserResponse> userResponses = userResponseDAO.getAllResponse(id);
+
+            TypedQuery<User> query = em.createQuery(
+                    "SELECT u FROM User u WHERE u.username = :username", User.class);
+            query.setParameter("username", username);
+
+            User user = query.getSingleResult();
+            int userId = user.getId();
+
+            List<UserResponse> userResponses = userResponseDAO.getAllResponse(userId);
+
+
             if (userResponses.isEmpty()) {
                 ctx.status(HttpStatus.NOT_FOUND).json(Map.of("status", HttpStatus.NOT_FOUND.getCode(), "msg",
                         "You need to answer questions before you can get a policy match"));
+                return;
             }
             List<UserResponseDTO> userResponseDTOs = convertToUserResponseDTOList(userResponses);
-            ChatGPTPolicyMatch result = policyMatchPrompt.getPolicyMatch(userResponseDTOs);
+
+            List<Question> questions = questionDAO.getAllQuestions(); // eller hvor du har den
+            ChatGPTPolicyMatch result = policyMatchPrompt.getPolicyMatch(questions, userResponseDTOs);
+            System.out.println("Resultat inden evaluering sendes til frontend: " + result);
             ctx.status(HttpStatus.OK).json(result);
 
         } catch (ApiException ae) {
@@ -122,11 +151,26 @@ public class ResponseController {
         } catch (PersistenceException pe) {
             ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).json(Map.of("status", HttpStatus.INTERNAL_SERVER_ERROR.getCode(),
                     "msg", "Database problems, try again later"));
-        } catch (OpenAIException oe) {
-            ctx.status(HttpStatus.BAD_GATEWAY).json(Map.of(
-                    "status", HttpStatus.BAD_GATEWAY.getCode(),
-                    "msg", "ChatGPT didn´t reply, try agai"));
-      debugLogger.error(formattedTime, "Intern error from chatGPT", oe);
+        }
+        catch (OpenAIException oe) {
+            // OpenAI SDK: 429 er typisk "quota/billing"
+            String msg = oe.getMessage();
+
+            if (msg != null && msg.contains("429")) {
+                ctx.status(HttpStatus.TOO_MANY_REQUESTS).json(Map.of(
+                        "status", HttpStatus.TOO_MANY_REQUESTS.getCode(),
+                        "msg", "OpenAI quota/billing problem (429). Check API key + billing on platform.openai.com.",
+                        "detail", msg
+                ));
+            } else {
+                ctx.status(HttpStatus.BAD_GATEWAY).json(Map.of(
+                        "status", HttpStatus.BAD_GATEWAY.getCode(),
+                        "msg", "OpenAI call failed",
+                        "detail", msg
+                ));
+            }
+            debugLogger.error(formattedTime, "OpenAI error", oe);
+
         } catch (JsonProcessingException jpe) {
             ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).json(Map.of(
                     "status", HttpStatus.INTERNAL_SERVER_ERROR.getCode(),
@@ -144,5 +188,14 @@ public class ResponseController {
             debugLogger.error(formattedTime, "Unexpected error", e);
         }
         }
+
+        /* gammel AI catch blok
+        catch (OpenAIException oe) {
+            ctx.status(HttpStatus.BAD_GATEWAY).json(Map.of(
+                    "status", HttpStatus.BAD_GATEWAY.getCode(),
+                    "msg", "ChatGPT didn´t reply, try agai"));
+      debugLogger.error(formattedTime, "Intern error from chatGPT", oe);
+      */
+
     }
 

@@ -39,6 +39,7 @@ public class SecurityController {
                 User verifiedUser = securityDAO.getVerifiedUser(user.getUsername(), user.getPassword());
                 System.out.println("login 1.2");
                 UserDTO verifiedUserDTO = ConverterUser.convertUserToUserDTO(verifiedUser);
+                System.out.println("UserDTO: " + verifiedUserDTO);
 
                 System.out.println("login 1.3 verifiedUserDTO username: " + verifiedUserDTO.getUsername());
                 System.out.println("login 1.3 verifiedUserDTO passsword: " + verifiedUserDTO.getPassword());
@@ -209,6 +210,7 @@ public class SecurityController {
 
 
     public String createToken(dk.bugelhartmann.UserDTO user) throws Exception {
+        System.out.println("Token format: " + user);
         try {
             String ISSUER;
             String TOKEN_EXPIRE_TIME;

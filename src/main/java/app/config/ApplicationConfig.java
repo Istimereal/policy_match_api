@@ -14,6 +14,7 @@ import app.security.SecurityDAO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.javalin.Javalin;
+import io.javalin.http.Context;
 import jakarta.persistence.EntityManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,7 @@ public class ApplicationConfig {
         UserResponseDAO userResponseDAO = UserResponseDAO.getInstance(emf);
 
         QuestionController questionController = new QuestionController(questionDAO);
-        ResponseController responseController = new ResponseController(userResponseDAO, emf);
+        ResponseController responseController = new ResponseController(questionDAO, userResponseDAO, emf);
 
         SecurityDAO securityDAO = new SecurityDAO(emf);
         SecurityController securityController = new SecurityController(securityDAO);
@@ -77,15 +78,24 @@ public class ApplicationConfig {
 
     private static void setCORS(Javalin app) {
         app.before(ApplicationConfig::setCorsHeaders);
-        app.options("/*", ApplicationConfig::setCorsHeaders);
+        app.options("/*", ApplicationConfig::corsHeadersOptions);
     }
 
-    private static void setCorsHeaders(io.javalin.http.Context ctx) {
+    private static void setCorsHeaders(Context ctx) {
         ctx.header("Access-Control-Allow-Origin", "*");
         ctx.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
         ctx.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
         ctx.header("Access-Control-Allow-Credentials", "true");
     }
+
+    private static void corsHeadersOptions(Context ctx) {
+        ctx.header("Access-Control-Allow-Origin", "*");
+        ctx.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        ctx.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        ctx.header("Access-Control-Allow-Credentials", "true");
+        ctx.status(204);
+    }
+
     //ændringer
     private static void setGeneralExceptionHandling(Javalin app) {
         app.exception(Exception.class, (e, ctx) -> {

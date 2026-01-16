@@ -4,6 +4,7 @@ import app.controllers.QuestionController;
 import app.enums.Role;
 import io.javalin.apibuilder.EndpointGroup;
 
+
 import static io.javalin.apibuilder.ApiBuilder.*;
 
 public class QuestionRoutes {
@@ -18,9 +19,11 @@ public class QuestionRoutes {
 
         return () -> {
             post( ctx -> questionController.createQuestions(ctx), Role.ADMIN);
-            patch(ctx -> questionController.updateQuestion(ctx), Role.ADMIN);
+         //   patch(ctx -> questionController.updateQuestion(ctx), Role.ADMIN);
             get(ctx -> questionController.getAllQuestions(ctx), Role.ANYONE);
-            delete(ctx -> questionController.deleteQuestion(ctx), Role.ADMIN);
+         //   delete(ctx -> questionController.deleteQuestion(ctx), Role.ADMIN);
+            patch("{id}", ctx -> questionController.updateQuestion(ctx), Role.ADMIN);
+            delete("{id}", ctx -> questionController.deleteQuestion(ctx), Role.ADMIN);
         };
     }
 }
