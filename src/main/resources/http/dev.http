@@ -2,7 +2,7 @@
 http://localhost:7075/api/v1
 
 ### A simple get request to the test endpoint. No need for login
-GET {{url}}/auth/register/
+POST {{url}}/auth/register/
 
 ####   <!--create new user-->
 POST {{url}}/auth/register/
@@ -24,18 +24,51 @@ content-type: application/json
 "password": "test123"
 }
 
+> {%
+    client.global.set("jwt_token", response.body.token);
+    console.log("JWT Token:", client.global.get("jwt_token"));
+%}
+
 ###
 POST{{url}}/questions/
 Authorization: Bearer {{admin_token}}
+
 {
   "header": "Climate change responsibility",
   "questionText": "Do you think Denmark should take stronger action against climate change, even if it costs jobs in certain industries?",
   "subject": "environment"
 }
 
+### Login som admin
+POST http://localhost:7075/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+> {%
+    client.global.set("admin_token", response.body.token);
+%}
+
+### Opret question som admin
+POST http://localhost:7075/api/v1/questions/
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+[
+ {
+   "header": "AI in school",
+   "questionText": "Should schools allow students to use AI tools like ChatGPT during exams?",
+   "subject": "technology"
+ }
+]
+
 ###
 POST {{url}}/response
 Authorization: Bearer {{user_token}}
+
 [{
 “id” : 2,
 “response”: “agree”,
