@@ -10,18 +10,22 @@ import jakarta.persistence.EntityManagerFactory;
 public class Main {
 
     public static void main(String[] args) {
-HibernateConfig.setIsTest(true);
-      //  EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory("policymatch");
-        EntityManagerFactory emfTest = HibernateConfig.getEntityManagerFactoryForTest();
 
-        Populator pop = new Populator(emfTest);
+        boolean deployed = System.getenv("DEPLOYED") != null;
 
+        HibernateConfig.setIsTest(false);
+
+        EntityManagerFactory emf = deployed
+                ? HibernateConfig.getEntityManagerFactory(System.getenv("DB_NAME"))
+                : HibernateConfig.getEntityManagerFactory("policymatch"); // lokal dev
+
+        int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "7073"));
+
+        Populator pop = new Populator(emf);
         pop.createUsersAndRoles();
-
         pop.createQuestions();
         pop.createAnswers();
-      //  pop.createRoles();
 
-        ApplicationConfig.startServer(7073, emfTest);
+        ApplicationConfig.startServer(port, emf);
     }
 }
