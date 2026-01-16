@@ -16,6 +16,7 @@ import app.service.ConverterQuestion.*;
 import io.javalin.http.Context;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -41,10 +42,18 @@ private static final Logger logger = LoggerFactory.getLogger("production");
     }
 
     public void createQuestions(Context ctx){
+        List<Question> newQuestions = new ArrayList<Question>();
 try {
-    List<QuestionDTO> newQuestiones = Arrays.asList(ctx.bodyAsClass(QuestionDTO[].class));
-  List<Question> savedQuestions =  questionDAO.createQuestion(ConverterQuestion.convertDTOToQuestionList(newQuestiones));
-    ctx.status(HttpStatus.CREATED).json(savedQuestions);
+    QuestionDTO newQuestiones = ctx.bodyAsClass(QuestionDTO.class);
+    System.out.println("NyeSpørgsmål: " + newQuestiones);
+   Question converted = ConverterQuestion.convertDTOToQuestion(newQuestiones);
+   newQuestions.add(converted);
+  List<Question> savedQuestions =  questionDAO.createQuestion(newQuestions);
+
+  List<QuestionDTO> response = ConverterQuestion.convertToQuestionDTO(savedQuestions);
+  QuestionDTO resp = response.get(0);
+
+    ctx.status(HttpStatus.CREATED).json(resp);
     logger.info("Created questions successfully");
 }
 catch(BadRequestResponse br) {
@@ -56,7 +65,7 @@ catch(BadRequestResponse br) {
 catch(ApiExceptionCreate aec){
     int questionAmount;
     questionAmount = aec.getQuestions().size();
-    ctx.status(HttpStatus.CONFLICT).json(Map.of("status", HttpStatus.CONFLICT.getCode(), "message", "A question with header: " + aec.getQuestions().get(questionAmount - 1).getHeader() +
+    ctx.status(HttpStatus.CONFLICT).json(Map.of("status", HttpStatus.CONFLICT.getCode(), "msg", "A question with header: " + aec.getQuestions().get(questionAmount - 1).getHeader() +
             "and subject: " + aec.getQuestions().get(questionAmount - 1).getSubject() + " already exists, adjust the question and try again"));
 }
 catch (PersistenceException pe){
@@ -68,10 +77,90 @@ catch (PersistenceException pe){
 catch(Exception e) {
     ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).json(Map.of("status",HttpStatus.INTERNAL_SERVER_ERROR.getCode(),
             "msg", "There was an unexpected problem with the server"));
-    debugLogger.error(formattedTime, "There was an unexpected problem with the server", e);
+    debugLogger.error(formattedTime, "Unexpected server problem", e);
 }
     }
 
+    public void updateQuestion(Context ctx) {
+        int id;
+        try {
+            id = Integer.parseInt(ctx.pathParam("id"));
+
+            if (id <= 0) {
+                ctx.status(HttpStatus.BAD_REQUEST).json(Map.of(
+                        "status", HttpStatus.BAD_REQUEST.getCode(),
+                        "msg", "Invalid id"
+                ));
+                return;
+            }
+
+            Question existing = questionDAO.findQuestionById(id);
+            if (existing == null) {
+                ctx.status(HttpStatus.NOT_FOUND).json(Map.of(
+                        "status", HttpStatus.NOT_FOUND.getCode(),
+                        "msg", "Question not found"
+                ));
+                return;
+            }
+
+            QuestionDTO questionDTO = ctx.bodyAsClass(QuestionDTO.class);
+
+            if (questionDTO.getHeader() != null && questionDTO.getHeader().isEmpty()) {
+                throw new BadRequestResponse("Header cannot be empty");
+            }
+            if (questionDTO.getSubject() == null || questionDTO.getSubject().isEmpty()) {
+                throw new BadRequestResponse("Subject cannot be empty");
+            }
+            if (questionDTO.getQuestionText() != null && questionDTO.getQuestionText().isEmpty()) {
+                throw new BadRequestResponse("Question text cannot be empty");
+            }
+
+            Question q = ConverterQuestion.convertDTOToQuestion(questionDTO);
+            q.setId(id);
+
+            Question updatedQuestion = questionDAO.updateQuestion(q);
+
+            if (updatedQuestion != null) {
+                QuestionDTO responseDTO = ConverterQuestion.convertQuestionToDTO(updatedQuestion);
+                ctx.status(HttpStatus.OK).json(responseDTO);
+            } else {
+                ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).json(Map.of(
+                        "status", HttpStatus.INTERNAL_SERVER_ERROR.getCode(),
+                        "msg", "Question could not be updated"
+                ));
+            }
+
+        } catch (NumberFormatException ne) {
+            ctx.status(HttpStatus.BAD_REQUEST).json(Map.of(
+                    "status", HttpStatus.BAD_REQUEST.getCode(),
+                    "msg", "Invalid id format"
+            ));
+        } catch (BadRequestResponse bre) {
+            String message = (bre.getMessage() == null || bre.getMessage().isBlank())
+                    ? "question with id: " + ctx.pathParam("id") + " was not in valid JSON format. See API documentation for correct structure."
+                    : bre.getMessage();
+
+            ctx.status(HttpStatus.BAD_REQUEST).json(Map.of(
+                    "status", HttpStatus.BAD_REQUEST.getCode(),
+                    "msg", message
+            ));
+        } catch (PersistenceException pe) {
+            ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).json(Map.of(
+                    "status", HttpStatus.INTERNAL_SERVER_ERROR.getCode(),
+                    "msg", "Database problems, try again later"
+            ));
+            debugLogger.error(formattedTime, "Database problems", pe);
+        } catch (Exception e) {
+            ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).json(Map.of(
+                    "status", HttpStatus.INTERNAL_SERVER_ERROR.getCode(),
+                    "msg", "There was an unexpected problem with the server"
+            ));
+            debugLogger.error(formattedTime, "Unexpected server problem", e);
+        }
+    }
+
+    /*
+gammel update question med lille fejl
     public void updateQuestion(Context ctx) {
         int id = 0;
         String operationType = "initializing";
@@ -82,7 +171,7 @@ catch(Exception e) {
             if (id > 0) {
                 question = questionDAO.findQuestionById(id);
                 if (question == null) {
-                    ctx.status(HttpStatus.NOT_FOUND).json(Map.of("status", HttpStatus.NOT_FOUND.getCode(), "message", "Question not found"));
+                    ctx.status(HttpStatus.NOT_FOUND).json(Map.of("status", HttpStatus.NOT_FOUND.getCode(), "msg", "Question not found"));
                     return;
                 }
             }
@@ -96,8 +185,18 @@ catch(Exception e) {
             if (questionDTO.getQuestionText() != null && questionDTO.getQuestionText().isEmpty()) {
                 throw new BadRequestResponse("Question text cannot be empty");
             }
+// mangler at lave QuestionDTO og returnere den med ctx
+   Question updatedQuestion = questionDAO.updateQuestion(ConverterQuestion.convertDTOToQuestion(questionDTO));
+            if(updatedQuestion != null){
+QuestionDTO responseDTO = ConverterQuestion.convertQuestionToDTO(updatedQuestion);
+                ctx.status(HttpStatus.OK).json(responseDTO);
+            }
+            else {
+                ctx.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .json(Map.of("status", HttpStatus.INTERNAL_SERVER_ERROR.getCode(),
+                                "msg", "Question could not be updated"));
+            }
 
-            questionDAO.updateQuestion(ConverterQuestion.convertDTOToQuestion(questionDTO));
         } catch (NumberFormatException ne) {
             ctx.json(Map.of("status", HttpStatus.BAD_REQUEST.getCode(), "msg", "Invalid id format"));
         } catch (BadRequestResponse bre) {
@@ -111,7 +210,7 @@ catch(Exception e) {
             } else {
                 message = bre.getMessage();
             }
-            ctx.status(HttpStatus.BAD_REQUEST).json(Map.of("status", HttpStatus.BAD_REQUEST.getCode(), "msg", bre.getMessage()));
+            ctx.status(HttpStatus.BAD_REQUEST).json(Map.of("status", HttpStatus.BAD_REQUEST.getCode(), "msg", message));
 
         } catch (PersistenceException pe) {
             ctx.json(Map.of("status", HttpStatus.INTERNAL_SERVER_ERROR.getCode(), "msg", "Database problems, try again later"));
@@ -121,7 +220,7 @@ catch(Exception e) {
             ctx.json(Map.of("status", HttpStatus.INTERNAL_SERVER_ERROR.getCode(), "msg", "Unexpected error updating poem" + ctx.pathParam("id")));
             debugLogger.debug(formattedTime + "; Unexpected error trying to update poem:" + id + "OperationState: " + operationType, e);
         }
-    }
+    }  */
 
     public void getAllQuestions(Context ctx){
 
@@ -131,7 +230,7 @@ try{
     if(allQuestions.isEmpty()){
 
         ctx.status(HttpStatus.NOT_FOUND).json(Map.of("status", HttpStatus.NOT_FOUND.getCode(),
-                "message", "Questions not found"));
+                "msg", "Questions not found"));
         logger.warn("No questions in Database");
     }
     else{

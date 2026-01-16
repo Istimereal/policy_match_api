@@ -23,6 +23,37 @@ public class UserResponseDAO {
         return instance;
     }
 
+    public void createResponse(List<UserResponse> responses) {
+        try (EntityManager em = emf.createEntityManager()) {
+
+            em.getTransaction().begin();
+
+            for (UserResponse ur : responses) {
+                int userId = ur.getId().getUserId();
+                int questionId = ur.getId().getQuestionId();
+
+                TypedQuery<Long> existsQuery = em.createQuery(
+                        "SELECT COUNT(ur) FROM UserResponse ur " +
+                                "WHERE ur.id.userId = :userId AND ur.id.questionId = :questionId",
+                        Long.class
+                );
+                existsQuery.setParameter("userId", userId);
+                existsQuery.setParameter("questionId", questionId);
+
+                boolean exists = existsQuery.getSingleResult() > 0;
+
+                if (!exists) {
+                    em.merge(ur); // ✅ håndterer detached associations
+                }
+            }
+
+            em.getTransaction().commit();
+
+        } catch (PersistenceException pe) {
+            throw new ApiException(500, pe.getMessage());
+        }
+    }
+   /*Gammel DAO
     public void createResponse(List<UserResponse> response) {
 
         try (EntityManager em = emf.createEntityManager()) {
@@ -45,7 +76,7 @@ public class UserResponseDAO {
             throw new ApiException(500, pe.getMessage());
         }
     }
-
+    */
     public List<UserResponse> getAllResponse(int userId) {
 
         try (EntityManager em = emf.createEntityManager()) {

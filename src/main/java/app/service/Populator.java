@@ -120,8 +120,30 @@ User admin = new User("admin","admin123","myMail@ad.dk","Lyngby");
                     .subject("technology")
                     .build();
 
+            Question q3 = Question.builder()
+                    .header("Immigration and welfare")
+                    .questionText("Should Denmark limit immigration if it puts pressure on the welfare system?")
+                    .subject("immigration")
+                    .build();
+
+            Question q4 = Question.builder()
+                    .header("Taxes and redistribution")
+                    .questionText("Should high-income earners pay significantly more in taxes to reduce economic inequality?")
+                    .subject("economy")
+                    .build();
+
+            Question q5 = Question.builder()
+                    .header("EU integration")
+                    .questionText("Should Denmark transfer more decision-making power to the European Union to solve common challenges?")
+                    .subject("eu")
+                    .build();
+
             em.persist(q1);
             em.persist(q2);
+            em.persist(q3);
+            em.persist(q4);
+            em.persist(q5);
+
             em.getTransaction().commit();
 
             System.out.println("Questions created successfully!");

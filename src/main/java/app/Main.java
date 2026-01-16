@@ -10,17 +10,18 @@ import jakarta.persistence.EntityManagerFactory;
 public class Main {
 
     public static void main(String[] args) {
+HibernateConfig.setIsTest(true);
+      //  EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory("policymatch");
+        EntityManagerFactory emfTest = HibernateConfig.getEntityManagerFactoryForTest();
 
-        EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory("policymatch");
-
-        Populator pop = new Populator(emf);
+        Populator pop = new Populator(emfTest);
 
         pop.createUsersAndRoles();
 
         pop.createQuestions();
         pop.createAnswers();
-       // pop.createRoles();
+      //  pop.createRoles();
 
-        ApplicationConfig.startServer(7075, emf);
+        ApplicationConfig.startServer(7073, emfTest);
     }
 }

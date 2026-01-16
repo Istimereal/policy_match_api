@@ -22,13 +22,13 @@
         <junit.version>5.9.1</junit.version>
         <hamcrest.version>2.0.0.0</hamcrest.version>
         <restassured.version>5.5.0</restassured.version>
-        <testcontainers.version>1.18.0</testcontainers.version>
+        <testcontainers.version>1.20.1</testcontainers.version>
 
         <jbcrypt.version>0.4</jbcrypt.version>
         <token.security.version>1.0.2</token.security.version>
 
         <javalin.version>6.3.0</javalin.version>
-        <javalin.port>7075</javalin.port>
+        <javalin.port>7073</javalin.port>
         <db.name>policymatch</db.name>
     </properties>
 
@@ -127,13 +127,11 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
             <version>${testcontainers.version}</version>  <!-- 1.20.1 eller nyere -->
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
-            <version>${testcontainers.version}</version>   <!-- Har før brugt ver 1.20.1 eller nyere -->
-            <scope>test</scope>
+            <version>${testcontainers.version}</version>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -143,7 +141,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>${testcontainers.version}</version> <!-- Har før brugt ver: 1.20.1 -->
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -186,12 +184,12 @@
             <artifactId>slf4j-api</artifactId>
             <version>2.0.7</version>
         </dependency>
-
         <dependency>
             <groupId>com.openai</groupId>
             <artifactId>openai-java</artifactId>
-            <version>4.6.1</version>
+            <version>4.14.0</version>
         </dependency>
+
 
         <dependency>
             <groupId>org.apache.groovy</groupId>
@@ -203,6 +201,7 @@
     <build>
         <finalName>app</finalName> <!-- This is the name of the jar file -->
         <plugins>
+            <!-- Maven Shade Plugin for creating a fat JAR -->
             <plugin>
                 <!--  https://www.baeldung.com/java-accessing-maven-properties  -->
                 <groupId>org.codehaus.mojo</groupId>
@@ -220,6 +219,7 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Maven Surefire Plugin for running tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
